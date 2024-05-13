@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if account.is_employee %}
+    {% include 'account/employee/dashboard.html' %}
+{% endif %}
+
+{% if account.is_employer %}
+    {% include 'account/employer/dashboard.html' %}
+{% endif %}
+
+{% endblock %}

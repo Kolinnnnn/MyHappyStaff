@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+<div class="row justify-content-md-center">
+    <div class="col-md-6">
+        {% if form.errors %}
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="card">
+                        <h5 class="card-header">
+                            Belbin test errors:
+                        </h5>
+                        <div class="card-body">
+                            <div class="card-text">
+                                <ul>
+                                    {% for field in form %}
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row mt-3">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form method="post">
+                                {% csrf_token %}
+                                {% for field in form %}
+                                    <div class="mb-3">
+                                        {% if field.field.widget.is_hidden %}
+                                            <label for="{{ field.id_for_label }}" class="form-label fs-2">{{ field.label }}</label>
+                                        {% else %}
+                                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                        {% endif %}
+                                        {% render_field field class="form-control" %}
+                                    </div>
+                                {% endfor %}
+                                <button type="submit" class="btn btn-primary btn-lg">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

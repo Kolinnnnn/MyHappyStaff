@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row justify-content-md-center" style="margin-top: 15px;">
+    <div class="col-md-8">
+        <form method="post" class="card">
+            {% csrf_token %}
+            <h2>Delete Project</h2>
+            <p>Are you sure that you want to delete "{{ project.code }}"?</p>
+            <p class="form-buttons">
+                <input type="submit" class="btn btn-primary" value="Delete">
+                <a href="{% url 'project-list' %}" class="btn btn-danger btn-outline">Cancel</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

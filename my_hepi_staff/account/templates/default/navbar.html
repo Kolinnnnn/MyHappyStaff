@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">My Hepi Staff</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Dashboard</a>
+          </li>
+
+          {% if account.is_employer %}
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'project-list' %}">Projects</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'employee-list' %}">Employees</a>
+            </li>
+          {% endif %}
+
+          {% if account.is_employee %}
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{% url 'employee-belbin-test' %}">Belbin Test</a>
+            </li>
+          {% endif %}
+        </ul>
+
+        {% if request.user.is_authenticated %}
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-dark">Logout</button>
+            </form>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  

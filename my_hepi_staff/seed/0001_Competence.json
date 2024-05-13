@@ -1,0 +1,152 @@
+[
+{
+    "model": "competence.group",
+    "pk": 1,
+    "fields": {
+        "name": "JavaScript",
+        "created": "1992-09-20T22:16:42Z",
+        "updated": "2019-02-22T03:21:46Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.group",
+    "pk": 2,
+    "fields": {
+        "name": ".Net",
+        "created": "1977-06-22T04:25:28Z",
+        "updated": "1976-10-11T01:45:58Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.group",
+    "pk": 3,
+    "fields": {
+        "name": "PHP",
+        "created": "2013-04-03T10:47:56Z",
+        "updated": "1990-02-08T14:07:46Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.group",
+    "pk": 4,
+    "fields": {
+        "name": "Python",
+        "created": "2016-11-28T16:41:29Z",
+        "updated": "1993-06-24T05:59:38Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 1,
+    "fields": {
+        "name": "React",
+        "competence_group": 1,
+        "created": "1989-04-22T08:55:11Z",
+        "updated": "1994-04-04T20:58:12Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 2,
+    "fields": {
+        "name": "React Native",
+        "competence_group": 1,
+        "created": "1980-08-28T18:02:42Z",
+        "updated": "2014-04-19T17:50:44Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 3,
+    "fields": {
+        "name": "Type Script",
+        "competence_group": 1,
+        "created": "1992-10-01T16:20:22Z",
+        "updated": "1989-10-03T14:02:37Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 4,
+    "fields": {
+        "name": "C#",
+        "competence_group": 2,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 5,
+    "fields": {
+        "name": "EF",
+        "competence_group": 2,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 6,
+    "fields": {
+        "name": "EF Core",
+        "competence_group": 2,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 7,
+    "fields": {
+        "name": "Dapper",
+        "competence_group": 2,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 8,
+    "fields": {
+        "name": "Laravel",
+        "competence_group": 3,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 9,
+    "fields": {
+        "name": "Symfony",
+        "competence_group": 3,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+},
+{
+    "model": "competence.competence",
+    "pk": 10,
+    "fields": {
+        "name": "xDebug",
+        "competence_group": 3,
+        "created": "1976-07-15T14:43:44Z",
+        "updated": "2023-02-21T00:31:35Z",
+        "status": true
+    }
+}
+]
