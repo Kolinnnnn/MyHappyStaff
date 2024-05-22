@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Filtered Employees</title>
+</head>
+<body>
+
+{% if employees %}
+    <h1>Filtered Employees</h1>
+    <ul>
+        {% for employee in employees %}
+            <li>{{ employee }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No employees found with selected competence.</p>
+{% endif %}
+
+</body>
+</html>

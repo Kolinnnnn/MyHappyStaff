@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Employees</title>
+    {% load static %}
+    <script src="{% static 'js/jquery.min.js' %}"></script> <!-- Dodanie jQuery -->
+    <script src="{% static 'js/script.js' %}" data-url="{% url 'filter-employees' %}"></script>
+</head>
+<body>
+    <form action="{% url 'project-create' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h4>Select Employees:</h4>
+        <ul id="selected-employees">
+            {% for employee in selected_employees %}
+                <li>{{ employee }}</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Obszar na wyświetlanie pracowników po filtrowaniu -->
+        <div id="filtered-employees-container">
+            <h4>Filtered Employees:</h4>
+            <ul id="filtered-employees"></ul>
+        </div>
+
+        <input type="submit" value="Save"> <!-- Usunięcie literki 'c' -->
+    </form>
+</body>
+</html>
