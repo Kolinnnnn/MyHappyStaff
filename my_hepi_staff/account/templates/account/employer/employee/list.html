@@ -11,6 +11,7 @@
                     <th scope="col">Lastname</th>
                     <th scope="col">E-mail</th>
                     <th scope="col">Belbin test result</th>
+                    <th scope="col">Competences</th> <!-- Nowa kolumna -->
                     <th scope="col">Action</th>
                 </tr>
             </thead>
@@ -18,7 +19,7 @@
             <tbody>
                 {% if employees|length == 0 %}
                 <tr>
-                    <td colspan="6">No results.</td>
+                    <td colspan="7">No results.</td> <!-- Zaktualizuj colspan na 7 -->
                 </tr>
                 {% else %}
                     {% for e in employees %}
@@ -28,6 +29,11 @@
                         <td>{{ e.account.user.last_name }}</td>
                         <td>{{ e.account.user.email }}</td>
                         <td>{{ e.belbin_test_result }}</td>
+                        <td>
+                            {% for competence in e.competences.all %}
+                                {{ competence.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
                         <td>
                             <!-- <a href="" class="btn btn-sm btn-danger">Delete</a> -->
                         </td>

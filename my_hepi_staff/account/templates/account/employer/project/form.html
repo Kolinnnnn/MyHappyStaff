@@ -1,11 +1,14 @@
-{% extends "base.html" %}
-{% block content %}
+<!-- form.html -->
 
+{% extends "base.html" %}
+
+{% block content %}
 <div class="row justify-content-md-center" style="margin-top: 15px;">
     <div class="col-md-8">
         <a href="{% url 'project-list' %}" class="btn btn-danger">Cancel</a>
     </div>
 </div>
+
 
 <div class="row justify-content-md-center" style="margin-top: 15px;">
     <div class="col-md-8">
@@ -20,10 +23,24 @@
                     <hr />
                 </div>
 
+
                 <div class="card-text">
-                    <form action="" method="POST">
+                    <form action="" method="POST" id="filter-form">
                         {{ form.as_p }}
                         {% csrf_token %}
+
+                        <!-- Input for competence name -->
+                        <div class="form-group">
+                            <label for="competence-name">Competence Name:</label>
+                            <input type="text" class="form-control" id="competence-name" name="competence-name">
+                            <div id="competence-suggestions"></div> <!-- Placeholder for competence suggestions -->
+                        </div>
+
+                        <!-- Filter Button -->
+                        <button type="button" class="btn btn-primary" id="filter-button">Filter</button>
+
+                        <!-- Placeholder for filtered employees -->
+                        <div id="filtered-employees"></div>
 
                         <p>
                             <input type="submit" class="btn btn-primary" value="Save" style="margin-top: 15px;">
@@ -33,7 +50,128 @@
             </div>
         </div>
     </div>
-    </div>
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#competence-name').on('input', function() {
+        var inputText = $(this).val(); // Get the text entered by the user
+        if (inputText.trim() !== '') { // Check if the input is not empty
+            fetchCompetenceSuggestions(inputText); // Fetch competence suggestions
+        } else {
+            $('#competence-suggestions').empty(); // Clear suggestions if input is empty
+        }
+    });
+
+    $('#filter-button').click(function(event) {
+        event.preventDefault(); // Prevent default button behavior
+        filterEmployees(); // Call function to filter employees
+    });
+
+    // Obsługa kliknięcia na pracownika na liście
+    $(document).on('change', '.employee-checkbox', function() {
+        var isChecked = $(this).is(':checked');
+        var employeeName = $(this).data('name');
+        if (isChecked) {
+            addEmployeeToList(employeeName); // Add employee to selected list
+        } else {
+            removeEmployeeFromList(employeeName); // Remove employee from selected list
+        }
+    });
+});
+
+function fetchCompetenceSuggestions(inputText) {
+    $.ajax({
+        url: '/get-competence-suggestions/',
+        type: 'GET',
+        data: {
+            input_text: inputText // Pass the text entered by the user to Django view
+        },
+        dataType: 'json',
+        success: function(response) {
+            displayCompetenceSuggestions(response.suggestions); // Display competence suggestions
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching competence suggestions:', error);
+        }
+    });
+}
+
+function displayCompetenceSuggestions(suggestions) {
+    var suggestionsList = $('#competence-suggestions');
+    suggestionsList.empty(); // Clear previous suggestions
+    suggestions.forEach(function(suggestion) {
+        var listItem = $('<li class="suggestion"></li>').text(suggestion); // Create list item with suggestion text
+        listItem.on('click', function() {
+            $('#competence-name').val(suggestion); // Set input value to the clicked suggestion
+            suggestionsList.empty(); // Clear suggestions after selecting one
+        });
+        suggestionsList.append(listItem); // Append list item to the suggestions list
+    });
+}
+
+function filterEmployees() {
+    var selectedCompetence = $('#competence-name').val(); // Get selected competence from input field
+    if (!selectedCompetence) {
+        alert('Please enter a competence name before filtering employees.');
+        return; // Stop function if no competence selected
+    }
+
+    // Get selected employees
+    var selectedEmployees = [];
+    $('.employee-checkbox:checked').each(function() {
+        selectedEmployees.push($(this).data('name'));
+    });
+
+    $.ajax({
+        url: '/filter-employees/',
+        type: 'GET',
+        data: {
+            competence_name: selectedCompetence, // Pass the selected competence to Django view
+            selected_employees: selectedEmployees // Pass the selected employees to Django view
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.error) {
+                console.error('Error filtering employees:', response.error);
+            } else {
+                displayFilteredEmployees(response.employees); // Display filtered employees
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error filtering employees:', error);
+        }
+    });
+}
+
+
+function displayFilteredEmployees(employees) {
+    var filteredEmployeesList = $('#filtered-employees');
+    filteredEmployeesList.empty(); // Clear previous filtered employees
+    employees.forEach(function(employee) {
+        var listItem = $('<li></li>');
+        var checkbox = $('<input type="checkbox" class="employee-checkbox" data-name="' + employee + '">');
+        listItem.append(checkbox);
+        listItem.append(employee);
+        filteredEmployeesList.append(listItem); // Append list item to the filtered employees list
+    });
+}
+
+function addEmployeeToList(employeeName) {
+    var selectedEmployeesList = $('#selected-employees');
+    var listItem = $('<li></li>').text(employeeName); // Create list item with employee name
+    selectedEmployeesList.append(listItem); // Append list item to the selected employees list
+}
+
+function removeEmployeeFromList(employeeName) {
+    $('#selected-employees li').each(function() {
+        if ($(this).text() === employeeName) {
+            $(this).remove(); // Remove employee from selected list
+            return false; // Break out of loop after removing the employee
+        }
+    });
+}
+
+</script>
 {% endblock %}

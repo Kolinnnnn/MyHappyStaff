@@ -2,22 +2,20 @@ from django import forms
 
 from account.models import Project, Employee
 from competence.models import Competence
-
+from django import forms
+from .models import Competence
 
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
-
 class CompetenceEnrollForm(forms.Form):
-    competence = forms.ModelMultipleChoiceField(queryset=Competence.objects.all(), 
+    competence = forms.ModelMultipleChoiceField(queryset=Competence.objects.all(),
                                         widget=forms.CheckboxSelectMultiple,
                                         label='')
 
-
 class AboutMeForm(forms.Form):
     description = forms.Textarea()
-
 
 class GroupedTableForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -37,14 +35,16 @@ class GroupedTableForm(forms.Form):
             if sum_of_group != 10:
                 self.add_error(f'group_{group_idx + 1}', f"The sum of the fields in '{group['name']}' must equal 10.")
 
-
 class ProjectForm(forms.ModelForm):
-    competences = forms.ModelMultipleChoiceField(queryset=Competence.objects.all(), required=True)
-    employees = forms.ModelMultipleChoiceField(queryset=Employee.objects.all(), required=True)
+    competences = forms.ModelMultipleChoiceField(queryset=Competence.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
+    employees = forms.ModelMultipleChoiceField(queryset=Employee.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
 
     class Meta:
         model = Project
         fields = ['code', 'title', 'description', 'competences', 'employees']
 
-    
-    
+class FilterEmployeesForm(forms.Form):
+    competences = forms.ModelMultipleChoiceField(queryset=Competence.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
+
+class CompetenceFilterForm(forms.Form):
+    competences = forms.ModelMultipleChoiceField(queryset=Competence.objects.all(), widget=forms.CheckboxSelectMultiple)

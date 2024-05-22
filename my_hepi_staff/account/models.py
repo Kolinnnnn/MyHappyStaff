@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from competence.models import Competence
 
+
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_employee = models.BooleanField(default=True, blank=False)
@@ -37,9 +38,9 @@ class Employee(models.Model):
 
 class Employer(models.Model):
     account = models.OneToOneField(Account, on_delete=models.CASCADE)
-    company_name = models.CharField(max_length=250, 
+    company_name = models.CharField(max_length=250,
                                     unique=True,
-                                    blank=False, 
+                                    blank=False,
                                     null=False)
     address = models.CharField(max_length=250, blank=False, null=False)
     post_code = models.CharField(max_length=6, blank=False, null=False)
@@ -62,11 +63,11 @@ class Project(models.Model):
     title = models.CharField(max_length=150, blank=False, null=False)
     code = models.CharField(max_length=30, blank=False, null=False, unique=True)
     description = models.TextField(blank=True, null=True)
-    competences = models.ManyToManyField(Competence,
-                                         related_name='project_competence_joined',
-                                         blank=True)
+    competences = models.ManyToManyField(Competence, related_name='project_competence_joined', blank=True)
     employees = models.ManyToManyField(Employee, related_name='projects', blank=True)
-    
+    selected_employees = models.ManyToManyField(Employee, related_name='selected_projects', blank=True)
+
+
     class Meta:
         ordering = ['code']
         indexes = [
@@ -77,4 +78,4 @@ class Project(models.Model):
         return reverse("project-list")
 
     def __str__(self) -> str:
-        return self.title    
+        return self.title

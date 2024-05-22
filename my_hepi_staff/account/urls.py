@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import FilterEmployeesView, get_all_employees, filter_employees, CompetenceSuggestionsView
 
 urlpatterns = [
     path('login/', auth_views.LoginView.as_view(), name='login'),
@@ -16,6 +17,10 @@ urlpatterns = [
     path('project/add', views.ProjectCreateView.as_view(), name='project-create'),
     path('project/<int:pk>', views.ProjectUpdateView.as_view(), name='project-update'),
     path('project/<int:pk>/delete', views.ProjectDeleteView.as_view(), name='project-delete'),
-
+    path('filter-employees/', filter_employees, name='filter-employees'),
     path('employee/', views.EmployerEmployeesView.as_view(), name='employee-list'),
+    path('get-all-employees/', get_all_employees, name='get-all-employees'),
+    path('get-competence-suggestions/', CompetenceSuggestionsView.as_view(), name='competence-suggestions'),
+
+
 ]

@@ -1,9 +1,8 @@
 from typing import Any
-
 from django.http import JsonResponse
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
-from django.urls import reverse_lazy 
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView, View
@@ -11,9 +10,57 @@ from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteVi
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from .models import Account, Employee, Employer, Project, Competence
-from .forms import CompetenceEnrollForm, GroupedTableForm, ProjectForm
+from django.http import HttpResponseRedirect
+from .forms import CompetenceEnrollForm, GroupedTableForm, ProjectForm, CompetenceFilterForm
+from django.template.loader import render_to_string
+from django.urls import reverse
+from .forms import ProjectForm
+from django.forms.models import model_to_dict
 
 
+
+class CompetenceSuggestionsView(View):
+    def get(self, request):
+        input_text = request.GET.get('input_text', '')
+        suggestions = []
+        if input_text:
+            # Szukamy nazw kompetencji, które zaczynają się od wprowadzonego tekstu
+            suggestions = Competence.objects.filter(name__istartswith=input_text).values_list('name', flat=True)
+        return JsonResponse({'suggestions': list(suggestions)})
+
+def get_all_employees(request):
+    try:
+        all_employees = Employee.objects.all()
+        employees_data = [{'id': employee.id, 'name': f"{employee.account.user.first_name} {employee.account.user.last_name}"} for employee in all_employees]
+        return JsonResponse(employees_data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def filter_employees(request):
+    if request.method == 'GET':
+        competence_name = request.GET.get('competence_name')
+        if competence_name:
+            try:
+                filtered_employees = Employee.objects.filter(competences__name=competence_name)
+                employee_names = [str(employee) for employee in filtered_employees]
+                return JsonResponse({'employees': employee_names})
+            except Employee.DoesNotExist:
+                return JsonResponse({'error': 'No employees found with selected competence.'}, status=404)
+        else:
+            return JsonResponse({'error': 'Competence name not provided.'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+class FilterEmployeesView(View):
+    def get(self, request):
+        try:
+            selected_competences = request.GET.getlist('competences[]')
+            filtered_employees = Employee.objects.filter(competences__name__in=selected_competences).distinct()
+            employees_data = [{'id': employee.id, 'name': employee.name} for employee in filtered_employees]
+            return JsonResponse(employees_data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 class DashboardView(TemplateView):
     template_name = 'account/dashboard.html'
 
@@ -22,7 +69,11 @@ class DashboardView(TemplateView):
         context = self.get_context_data()
 
         return render(request, self.template_name, context=context)
-    
+
+    @method_decorator(login_required, name='dispatch')
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data()
 
@@ -34,27 +85,23 @@ class DashboardView(TemplateView):
             context['competences_groups'] = self._get_sorted_comptences_groups_and_competences_(context['employee'])
 
         return context
-    
-    def _get_sorted_comptences_groups_and_competences_(self, employee: Employee) -> dict[str, Any]:
+
+    def _get_sorted_comptences_groups_and_competences_(self, employee: Employee) -> dict[str, list[str]]:
         competences = employee.competences.all()
         result = {}
 
         for competence in competences:
             key = competence.competence_group.name
+            result.setdefault(key, []).append(competence.name)
 
-            if key not in result:
-                result[key] = []
-
-            result[key].append(competence.name)
-        
         return result
-    
+
 
 class EmployeeAboutMeUpdateView(LoginRequiredMixin, UpdateView):
     model = Employee
     fields = ['description']
     template_name = 'account/employee/aboutme_update_form.html'
-    
+
 
 class EmployeeCompetenceView(LoginRequiredMixin, FormView):
     template_name = 'account/employee/competence.html'
@@ -76,7 +123,7 @@ class EmployeeCompetenceView(LoginRequiredMixin, FormView):
             employee.competences.add(competence)
 
         return super().form_valid(form)
-    
+
 
 class ProjectView(TemplateView):
     template_name = 'account/employer/project/list.html'
@@ -85,7 +132,7 @@ class ProjectView(TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         return render(request, self.template_name, context=context)
-    
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data()
 
@@ -97,7 +144,7 @@ class ProjectView(TemplateView):
             context['projects'] = Project.objects.filter(employer_id=employer.pk)
 
         return context
-    
+
 
 class ProjectCreateView(CreateView, LoginRequiredMixin):
     model = Project
@@ -105,15 +152,22 @@ class ProjectCreateView(CreateView, LoginRequiredMixin):
     template_name = 'account/employer/project/form.html'
 
     def form_valid(self, form):
-        project = form.save(commit=False)
-        project.employer = Employer.objects.get(account_id=self.request.user.account.pk)
-        project.save()
+        # Pobierz aktualnie zalogowanego pracodawcę
+        employer = Employer.objects.get(account__user=self.request.user)
 
-        employees = self.request.POST.getlist('employees')  # Pobierz listę wybranych pracowników z formularza
-        project.employees.set(employees)  # Przypisz wybranych pracowników do projektu
+        # Przypisz pracodawcę do nowo tworzonego projektu
+        form.instance.employer = employer
 
-        return redirect("project-list")
-    
+        # Najpierw zapisz projekt, aby uzyskać jego ID
+        response = super().form_valid(form)
+
+        # Teraz możesz dodać relacje wiele-do-wielu
+        employees = form.cleaned_data['employees']
+        form.instance.employees.set(employees)
+
+        return response
+
+
 
 class ProjectUpdateView(UpdateView, LoginRequiredMixin):
     model = Project
@@ -310,7 +364,7 @@ class EmployeeBelbinTest(View):
             'SĘ': {'sredni': (7, 11), 'wysoki': (12, 16), 'bardzo wysoki': (17, float('inf'))},
             'CZG': {'sredni': (5, 10), 'wysoki': (11, 15), 'bardzo wysoki': (16, float('inf'))},
             'PER': {'sredni': (8, 13), 'wysoki': (14, 19), 'bardzo wysoki': (20, float('inf'))},
-            }   
+            }
             min_score = 0
             roles_above_min_score = []
             roles_with_levels = []
@@ -328,8 +382,8 @@ class EmployeeBelbinTest(View):
                     if range_values[0] <= score <= range_values[1]:
                         level = level_name
                         break
-                
-                if level: 
+
+                if level:
                     roles_with_levels.append((role_name, level))
 
 
